@@ -20,7 +20,16 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+
 // Mount routes (user created)
+// Authentication routes
+const authRoute = require('./route/authRoute');
+app.use('/api/auth', authRoute);
+
+// User management routes (admin only)
+const userRoute = require('./route/userRoute');
+app.use('/api/users', userRoute);
+
 // Route file located at ./route/blogRoute.js
 const blogRoute = require('./route/blogRoute');
 app.use('/api/blog', blogRoute);

@@ -8,10 +8,39 @@ const Information = require('../model/informationModel');
 // =============================
 router.get('/', async (req, res) => {
   try {
-    const { informationId, search, status } = req.query;
+    const { informationId, search, status, includeDescendants } = req.query;
     const filter = {};
 
-    if (informationId) filter.informationId = informationId;
+    // Nếu có informationId và includeDescendants=true, lấy cả con cháu
+    if (informationId && includeDescendants === 'true') {
+      // Lấy tất cả categories
+      const allCategories = await Information.find({});
+      
+      // Hàm đệ quy lấy tất cả ID con cháu
+      const getAllDescendantIds = (categoryId, categories) => {
+        const children = categories.filter(cat => 
+          cat.parentId && cat.parentId.toString() === categoryId.toString()
+        );
+        let descendantIds = [];
+        
+        children.forEach(child => {
+          descendantIds.push(child._id);
+          descendantIds = descendantIds.concat(
+            getAllDescendantIds(child._id, categories)
+          );
+        });
+        
+        return descendantIds;
+      };
+      
+      // Lấy tất cả IDs (bao gồm cả category hiện tại)
+      const categoryIds = [informationId, ...getAllDescendantIds(informationId, allCategories)];
+      filter.informationId = { $in: categoryIds };
+    } else if (informationId) {
+      // Chỉ lấy blogs trực tiếp của category này
+      filter.informationId = informationId;
+    }
+
     if (status) filter.status = status;
     if (search) {
       filter.$or = [
@@ -71,7 +100,7 @@ router.get('/slug/:slug', async (req, res) => {
 // =============================
 router.post('/', async (req, res) => {
   try {
-    const { title, slug, sections, author, informationId, image, tags, status } = req.body;
+    const { title, slug, sections, author, informationId, image, tags, isProduct, status } = req.body;
 
     const existing = await Blog.findOne({ slug });
     if (existing) {
@@ -94,6 +123,7 @@ router.post('/', async (req, res) => {
       informationId,
       image,
       tags,
+      isProduct: isProduct || false,
       status: status || 'draft'
     });
 
@@ -110,11 +140,11 @@ router.post('/', async (req, res) => {
 // =============================
 router.put('/:id', async (req, res) => {
   try {
-    const { title, slug, sections, author, informationId, image, tags, status } = req.body;
+    const { title, slug, sections, author, informationId, image, tags, isProduct, status } = req.body;
 
     const updatedBlog = await Blog.findByIdAndUpdate(
       req.params.id,
-      { title, slug, sections, author, informationId, image, tags, status },
+      { title, slug, sections, author, informationId, image, tags, isProduct, status },
       { new: true }
     );
 
