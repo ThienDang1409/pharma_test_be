@@ -16,10 +16,19 @@ const PORT = process.env.PORT || 3000;
 const MONGO_URI = process.env.MONGO_URI || 'mongodb+srv://yoyiseo12_db_user:L4oz431LlWnNn4he@cluster0.ybtsayy.mongodb.net/?appName=Cluster0';
 
 // Middleware
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(cors({
+  origin: '*', // Cho phép tất cả origin trên Render
+  credentials: true
+}));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
+// Debug middleware - log all requests
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
+  console.log('Body:', req.body);
+  next();
+});
 
 // Mount routes (user created)
 // Authentication routes
@@ -52,7 +61,12 @@ app.get('/', (req, res) => {
 
 // Global 404
 app.use((req, res, next) => {
-  res.status(404).json({ message: 'Không tìm thấy route.' });
+  console.log(`❌ 404: ${req.method} ${req.path} - Không có route match`);
+  res.status(404).json({ 
+    message: 'Không tìm thấy route.',
+    path: req.path,
+    method: req.method
+  });
 });
 
 // Global error handler
