@@ -6,6 +6,10 @@ const InformationSchema = new mongoose.Schema({
     required: true,
     trim: true, // VD: "About", "Products"
   },
+  name_en: {
+    type: String,
+    trim: true,
+  },
   slug: {
     type: String,
     required: true,
@@ -17,6 +21,10 @@ const InformationSchema = new mongoose.Schema({
     default: null, // Nếu null → là danh mục cha (top level)
   },
   description: {
+    type: String,
+    default: "",
+  },
+  description_en: {
     type: String,
     default: "",
   },

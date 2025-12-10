@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Information = require('../model/informationModel');
+const { generateSlug, generateUniqueSlug } = require('../utils/slugHelper');
 
 // =============================
 // 🔹 1. Lấy tất cả Information (có thể dạng cây hoặc phẳng)
@@ -53,18 +54,27 @@ router.get('/:id', async (req, res) => {
 // =============================
 router.post('/', async (req, res) => {
   try {
-    const { name, slug, parentId, description, image, order } = req.body;
+    let { name, name_en, slug, parentId, description, description_en, image, order } = req.body;
 
-    const existing = await Information.findOne({ slug });
-    if (existing) {
-      return res.status(400).json({ message: 'Slug đã tồn tại.' });
+    // Auto-generate slug from English name (preferred) or Vietnamese name
+    if (!slug) {
+      const baseSlug = generateSlug(name_en || name);
+      slug = await generateUniqueSlug(baseSlug, Information);
+    } else {
+      // Check if provided slug exists
+      const existing = await Information.findOne({ slug });
+      if (existing) {
+        return res.status(400).json({ message: 'Slug đã tồn tại.' });
+      }
     }
 
     const info = new Information({
       name,
+      name_en,
       slug,
       parentId: parentId || null,
       description,
+      description_en,
       image,
       order
     });
@@ -82,17 +92,31 @@ router.post('/', async (req, res) => {
 // =============================
 router.put('/:id', async (req, res) => {
   try {
-    const { name, slug, parentId, description, image, order } = req.body;
+    let { name, name_en, slug, parentId, description, description_en, image, order } = req.body;
+
+    // Get existing info
+    const existingInfo = await Information.findById(req.params.id);
+    if (!existingInfo) {
+      return res.status(404).json({ message: 'Không tìm thấy mục để cập nhật.' });
+    }
+
+    // If name_en or name changed and no slug provided, regenerate slug
+    // Prioritize English name for slug generation
+    const nameForSlug = name_en || name;
+    const existingNameForSlug = existingInfo.name_en || existingInfo.name;
+    
+    if (nameForSlug !== existingNameForSlug && !slug) {
+      const baseSlug = generateSlug(nameForSlug);
+      slug = await generateUniqueSlug(baseSlug, Information, req.params.id);
+    } else if (!slug) {
+      slug = existingInfo.slug; // Keep existing slug
+    }
 
     const updatedInfo = await Information.findByIdAndUpdate(
       req.params.id,
-      { name, slug, parentId, description, image, order },
+      { name, name_en, slug, parentId, description, description_en, image, order },
       { new: true }
     );
-
-    if (!updatedInfo) {
-      return res.status(404).json({ message: 'Không tìm thấy mục để cập nhật.' });
-    }
 
     res.status(200).json(updatedInfo);
   } catch (error) {

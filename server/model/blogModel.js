@@ -2,10 +2,12 @@ const mongoose = require('mongoose');
 
 // Schema cho từng section trong blog
 const SectionSchema = new mongoose.Schema({
-  title: { type: String, required: false },  // ví dụ: "Description of ....", "Feature of ...."
-  slug: { type: String, required: false },   // ví dụ: "description"
+  title: { type: String, required: true },  // ví dụ: "Description of ....", "Feature of ...."
+  title_en: { type: String },               // Tiêu đề tiếng Anh
+  slug: { type: String, required: true },   // ví dụ: "description"
   type: { type: String, required: true },   // ví dụ:"Description", "Feature", "Content"
-  content: { type: String, required: false }, // HTML hoặc Markdown
+  content: { type: String, required: true }, // HTML hoặc Markdown (VI)
+  content_en: { type: String },             // HTML hoặc Markdown (EN)
 }, { _id: false });
 
 // Blog Schema chính
@@ -13,6 +15,10 @@ const BlogSchema = new mongoose.Schema({
   title: {
     type: String,
     required: true,
+    trim: true
+  },
+  title_en: {
+    type: String,
     trim: true
   },
   slug: {
@@ -29,6 +35,10 @@ const BlogSchema = new mongoose.Schema({
     default: '/default-image.jpg'
   },
   excerpt: {
+    type: String,
+    trim: true
+  },
+  excerpt_en: {
     type: String,
     trim: true
   },

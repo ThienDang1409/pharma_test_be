@@ -2,13 +2,15 @@ const express = require('express');
 const router = express.Router();
 const Blog = require('../model/blogModel');
 const Information = require('../model/informationModel');
+const { generateSlug, generateUniqueSlug } = require('../utils/slugHelper');
 
 // =============================
-// 🔹 1. Lấy danh sách Blog (tất cả hoặc lọc theo category / tìm kiếm)
+// 🔹 1. Lấy danh sách Blog (tất cả hoặc lọc theo category / tìm kiếm) - CÓ PHÂN TRANG
+// Hỗ trợ includeDescendants=true để lấy cả blogs của category con/cháu
 // =============================
 router.get('/', async (req, res) => {
   try {
-    const { informationId, search, status, includeDescendants } = req.query;
+    const { informationId, search, status, includeDescendants, page = 1, limit = 10 } = req.query;
     const filter = {};
 
     // Nếu có informationId và includeDescendants=true, lấy cả con cháu
@@ -45,16 +47,37 @@ router.get('/', async (req, res) => {
     if (search) {
       filter.$or = [
         { title: new RegExp(search, 'i') },
+        { title_en: new RegExp(search, 'i') },
         { sections: new RegExp(search, 'i') },
         { tags: new RegExp(search, 'i') }
       ];
     }
 
-    const blogs = await Blog.find(filter)
-      .populate('informationId', 'name slug')
-      .sort({ createdAt: -1 });
+    // Pagination calculation
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+    const skip = (pageNum - 1) * limitNum;
 
-    res.status(200).json(blogs);
+    // Get total count
+    const total = await Blog.countDocuments(filter);
+
+    // Get paginated results
+    const blogs = await Blog.find(filter)
+      .populate('informationId', 'name name_en slug')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limitNum);
+
+    // Return paginated response
+    res.status(200).json({
+      data: blogs,
+      pagination: {
+        page: pageNum,
+        limit: limitNum,
+        total: total,
+        totalPages: Math.ceil(total / limitNum)
+      }
+    });
   } catch (error) {
     console.error('Error fetching blogs:', error);
     res.status(500).json({ message: 'Lỗi khi lấy danh sách blog.' });
@@ -100,11 +123,18 @@ router.get('/slug/:slug', async (req, res) => {
 // =============================
 router.post('/', async (req, res) => {
   try {
-    const { title, slug, sections, author, informationId, image, tags, isProduct, status } = req.body;
+    let { title, title_en, slug, sections, author, informationId, image, tags, isProduct, status, excerpt, excerpt_en } = req.body;
 
-    const existing = await Blog.findOne({ slug });
-    if (existing) {
-      return res.status(400).json({ message: 'Slug đã tồn tại.' });
+    // Auto-generate slug from title if not provided
+    if (!slug) {
+      const baseSlug = generateSlug(title);
+      slug = await generateUniqueSlug(baseSlug, Blog);
+    } else {
+      // Check if provided slug exists
+      const existing = await Blog.findOne({ slug });
+      if (existing) {
+        return res.status(400).json({ message: 'Slug đã tồn tại.' });
+      }
     }
 
     // Kiểm tra category hợp lệ (nếu có)
@@ -117,12 +147,15 @@ router.post('/', async (req, res) => {
 
     const newBlog = new Blog({
       title,
+      title_en,
       slug,
       sections,
       author,
       informationId,
       image,
       tags,
+      excerpt,
+      excerpt_en,
       isProduct: isProduct || false,
       status: status || 'draft'
     });
@@ -140,17 +173,27 @@ router.post('/', async (req, res) => {
 // =============================
 router.put('/:id', async (req, res) => {
   try {
-    const { title, slug, sections, author, informationId, image, tags, isProduct, status } = req.body;
+    let { title, title_en, slug, sections, author, informationId, image, tags, isProduct, status, excerpt, excerpt_en } = req.body;
+
+    // Get existing blog
+    const existingBlog = await Blog.findById(req.params.id);
+    if (!existingBlog) {
+      return res.status(404).json({ message: 'Không tìm thấy bài viết để cập nhật.' });
+    }
+
+    // If title changed and no slug provided, regenerate slug
+    if (title !== existingBlog.title && !slug) {
+      const baseSlug = generateSlug(title);
+      slug = await generateUniqueSlug(baseSlug, Blog, req.params.id);
+    } else if (!slug) {
+      slug = existingBlog.slug; // Keep existing slug
+    }
 
     const updatedBlog = await Blog.findByIdAndUpdate(
       req.params.id,
-      { title, slug, sections, author, informationId, image, tags, isProduct, status },
+      { title, title_en, slug, sections, author, informationId, image, tags, isProduct, status, excerpt, excerpt_en },
       { new: true }
     );
-
-    if (!updatedBlog) {
-      return res.status(404).json({ message: 'Không tìm thấy bài viết để cập nhật.' });
-    }
 
     res.status(200).json(updatedBlog);
   } catch (error) {
