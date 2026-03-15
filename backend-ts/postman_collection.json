@@ -1,0 +1,426 @@
+{
+    "info": {
+        "_postman_id": "eb607106-5a43-41c3-8888-9d9fc92261ca",
+        "name": "Backend API Collection - Comprehensive",
+        "description": "API collection for the backend services with full coverage of success and error cases.",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "Auth",
+            "item": [
+                {
+                    "name": "Success Cases",
+                    "item": [
+                        {
+                            "name": "Register",
+                            "request": {
+                                "method": "POST",
+                                "header": [],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"email\": \"testuser_{{$timestamp}}@example.com\",\n  \"password\": \"Password123!\",\n  \"name\": \"Test User\",\n  \"phone\": \"0123456789\",\n  \"address\": \"123 Test St\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                },
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/auth/register",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["api", "auth", "register"]
+                                }
+                            }
+                        },
+                        {
+                            "name": "Login",
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "exec": [
+                                            "const response = pm.response.json();",
+                                            "if (response && response.data) {",
+                                            "    pm.collectionVariables.set(\"accessToken\", response.data.accessToken);",
+                                            "    pm.collectionVariables.set(\"refreshToken\", response.data.refreshToken);",
+                                            "}"
+                                        ],
+                                        "type": "text/javascript"
+                                    }
+                                }
+                            ],
+                            "request": {
+                                "method": "POST",
+                                "header": [],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                },
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/auth/login",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["api", "auth", "login"]
+                                }
+                            }
+                        },
+                        {
+                            "name": "Refresh Token",
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "exec": [
+                                            "const response = pm.response.json();",
+                                            "if (response && response.data) {",
+                                            "    pm.collectionVariables.set(\"accessToken\", response.data.accessToken);",
+                                            "}"
+                                        ],
+                                        "type": "text/javascript"
+                                    }
+                                }
+                            ],
+                            "request": {
+                                "method": "POST",
+                                "header": [],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                },
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/auth/refresh-token",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["api", "auth", "refresh-token"]
+                                }
+                            }
+                        },
+                        {
+                            "name": "Get Me",
+                            "request": {
+                                "auth": {
+                                    "type": "bearer",
+                                    "bearer": [{"key": "token", "value": "{{accessToken}}", "type": "string"}]
+                                },
+                                "method": "GET",
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/auth/me",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["api", "auth", "me"]
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Negative Cases",
+                    "item": [
+                        {
+                            "name": "Register - Missing Email",
+                            "request": {
+                                "method": "POST",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"password\": \"password123\",\n  \"name\": \"No Email\"\n}",
+                                    "options": {"raw": {"language": "json"}}
+                                },
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/auth/register",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["api", "auth", "register"]
+                                }
+                            }
+                        },
+                        {
+                            "name": "Login - Invalid Credentials",
+                            "request": {
+                                "method": "POST",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"email\": \"nonexistent@example.com\",\n  \"password\": \"wrong\"\n}",
+                                    "options": {"raw": {"language": "json"}}
+                                },
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/auth/login",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["api", "auth", "login"]
+                                }
+                            }
+                        },
+                        {
+                            "name": "Refresh - Invalid Token",
+                            "request": {
+                                "method": "POST",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"refreshToken\": \"invalid_token\"\n}",
+                                    "options": {"raw": {"language": "json"}}
+                                },
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/auth/refresh-token",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["api", "auth", "refresh-token"]
+                                }
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Blog",
+            "item": [
+                {
+                    "name": "Success Cases",
+                    "item": [
+                        {
+                            "name": "Get All Blogs",
+                            "request": {
+                                "method": "GET",
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/blog?page=1&limit=10&status=published",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["api", "blog"],
+                                    "query": [
+                                        {"key": "page", "value": "1"},
+                                        {"key": "limit", "value": "10"},
+                                        {"key": "status", "value": "published"}
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "name": "Create Blog with Image",
+                            "request": {
+                                "auth": {
+                                    "type": "bearer",
+                                    "bearer": [{"key": "token", "value": "{{accessToken}}", "type": "string"}]
+                                },
+                                "method": "POST",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"title\": \"Bài viết có ảnh {{$timestamp}}\",\n  \"informationId\": \"65a000000000000000000001\",\n  \"image\": \"{{lastImageId}}\",\n  \"status\": \"published\",\n  \"slug\": \"bai-viet-co-anh-{{$timestamp}}\"\n}",
+                                    "options": {"raw": {"language": "json"}}
+                                },
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/blog",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["api", "blog"]
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Negative Cases",
+                    "item": [
+                        {
+                            "name": "Get Non-existent Blog",
+                            "request": {
+                                "method": "GET",
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/blog/slug/non-existent-slug",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["api", "blog", "slug", "non-existent-slug"]
+                                }
+                            }
+                        },
+                        {
+                            "name": "Create Blog - Unauthorized",
+                            "request": {
+                                "method": "POST",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{}",
+                                    "options": {"raw": {"language": "json"}}
+                                },
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/blog",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["api", "blog"]
+                                }
+                            }
+                        },
+                        {
+                            "name": "Delete - Forbidden (Standard User)",
+                            "request": {
+                                "auth": {
+                                    "type": "bearer",
+                                    "bearer": [{"key": "token", "value": "{{accessToken}}", "type": "string"}]
+                                },
+                                "method": "DELETE",
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/blog/65a1234567890abcdef123456",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["api", "blog", "65a1234567890abcdef123456"]
+                                }
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Information",
+            "item": [
+                {
+                    "name": "Get Tree",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{baseUrl}}/api/informations/tree",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "informations", "tree"]
+                        }
+                    }
+                },
+                {
+                    "name": "Negative - Delete with Children",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [{"key": "token", "value": "{{accessToken}}", "type": "string"}]
+                        },
+                        "method": "DELETE",
+                        "url": {
+                            "raw": "{{baseUrl}}/api/informations/65a000000000000000000001",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "informations", "65a000000000000000000001"]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "User",
+            "item": [
+                {
+                    "name": "Admin Only",
+                    "item": [
+                        {
+                            "name": "Get All Users",
+                            "request": {
+                                "auth": {
+                                    "type": "bearer",
+                                    "bearer": [{"key": "token", "value": "{{accessToken}}", "type": "string"}]
+                                },
+                                "method": "GET",
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/users",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["api", "users"]
+                                }
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Image",
+            "item": [
+                {
+                    "name": "Upload Single",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "const response = pm.response.json();",
+                                    "if (response && response._id) {",
+                                    "    pm.collectionVariables.set(\"lastImageId\", response._id);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [{"key": "token", "value": "{{accessToken}}", "type": "string"}]
+                        },
+                        "method": "POST",
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {"key": "file", "type": "file", "src": []},
+                                {"key": "folder", "value": "test", "type": "text"}
+                            ]
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/images/upload",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "images", "upload"]
+                        }
+                    }
+                },
+                {
+                    "name": "Negative - Missing File",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [{"key": "token", "value": "{{accessToken}}", "type": "string"}]
+                        },
+                        "method": "POST",
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [{"key": "folder", "value": "test", "type": "text"}]
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/images/upload",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "images", "upload"]
+                        }
+                    }
+                },
+                {
+                    "name": "Cleanup (Admin)",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [{"key": "token", "value": "{{accessToken}}", "type": "string"}]
+                        },
+                        "method": "POST",
+                        "url": {
+                            "raw": "{{baseUrl}}/api/images/cleanup",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "images", "cleanup"]
+                        }
+                    }
+                }
+            ]
+        }
+    ],
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "http://localhost:3000",
+            "type": "string"
+        },
+        {
+            "key": "accessToken",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "refreshToken",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "lastImageId",
+            "value": "",
+            "type": "string"
+        }
+    ]
+}
