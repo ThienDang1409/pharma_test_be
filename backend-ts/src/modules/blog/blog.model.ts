@@ -83,10 +83,29 @@ BlogSchema.virtual('id').get(function (this: any) {
 });
 
 // Indexes for query optimization
-BlogSchema.index({ slug: 1 });
+// BlogSchema.index({ slug: 1 });
 BlogSchema.index({ status: 1, createdAt: -1 });
 BlogSchema.index({ informationId: 1 });
 BlogSchema.index({ isProduct: 1 });
+
+// Text index for search
+BlogSchema.index(
+  {
+    title: 'text',
+    title_en: 'text',
+    excerpt: 'text',
+    excerpt_en: 'text',
+  },
+  {
+    weights: {
+      title: 10,
+      title_en: 10,
+      excerpt: 5,
+      excerpt_en: 5,
+    },
+    name: 'BlogTextIndex',
+  }
+);
 
 // Show virtuals when toJSON
 BlogSchema.set('toJSON', {

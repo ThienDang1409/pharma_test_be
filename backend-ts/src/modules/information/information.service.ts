@@ -5,7 +5,9 @@ import {
   InformationQueryDto,
   InformationResponseDto,
   InformationTreeDto,
+  InformationNavigationDto,
 } from './information.dto';
+import Blog from '../blog/blog.model';
 import { NotFoundError, BadRequestError } from '../../common/exceptions';
 import { IPaginationResult } from '../../common/types';
 import { generateSlug, generateUniqueSlug } from '../../common/utils/slugHelper';
@@ -97,6 +99,83 @@ export class InformationService {
   }
 
   /**
+   * Get dynamic navigation structure for Frontend
+   */
+  async getNavigation(): Promise<InformationNavigationDto[]> {
+    // Get all root categories marked to show in menu
+    const rootCategories = await Information.find({
+      parentId: null,
+      isActive: true,
+      showInMenu: true,
+    })
+      .sort({ menuOrder: 1, order: 1 })
+      .lean();
+
+    const navigation: InformationNavigationDto[] = [];
+
+    for (const cat of rootCategories) {
+      const navItem: InformationNavigationDto = {
+        _id: cat._id.toString(),
+        name: cat.name,
+        name_en: cat.name_en,
+        slug: cat.slug,
+        dropdownType: cat.dropdownType,
+        items: [],
+      };
+
+      // Populate items based on dropdownType
+      if (cat.dropdownType === 'children') {
+        const children = await Information.find({
+          parentId: cat._id.toString(),
+          isActive: true,
+        })
+          .sort({ order: 1 })
+          .lean();
+        
+        navItem.items = children.map(child => ({
+          _id: child._id.toString(),
+          name: child.name,
+          name_en: child.name_en,
+          slug: child.slug,
+          type: 'category'
+        }));
+      } else if (cat.dropdownType === 'blogs') {
+        const blogs = await Blog.find({
+          informationId: cat._id,
+          status: 'published',
+        })
+          .sort({ createdAt: -1 })
+          .limit(10)
+          .select('title title_en slug')
+          .lean();
+        
+        navItem.items = blogs.map(blog => ({
+          _id: blog._id.toString(),
+          name: blog.title,
+          name_en: blog.title_en || '',
+          slug: blog.slug,
+          type: 'blog'
+        }));
+      }
+
+      // Handle self-link if enabled
+      if (cat.includeSelfInDropdown) {
+        navItem.items.unshift({
+          _id: cat._id.toString(),
+          name: cat.name,
+          name_en: cat.name_en,
+          slug: cat.slug,
+          type: 'category'
+        });
+      }
+
+      navigation.push(navItem);
+    }
+
+    return navigation;
+  }
+
+  /**
    * Get information by ID
    */
   async getInformationById(id: string): Promise<InformationResponseDto> {
@@ -153,12 +232,8 @@ export class InformationService {
   async createInformation(
     data: CreateInformationDto
   ): Promise<InformationResponseDto> {
-    // Sanitize empty strings to null for ObjectId fields
-    if (data.image === '') data.image = undefined;
-    if (data.parentId === '') data.parentId = null;
-
     // Validate parent exists if parentId provided
-    if (data.parentId && data.parentId !== null) {
+    if (data.parentId) {
       const parent = await Information.findById(data.parentId);
       if (!parent) {
         throw new BadRequestError('Parent information not found');
@@ -172,6 +247,7 @@ export class InformationService {
       ...data,
       slug,
       order: data.order ?? 0,
+      menuOrder: data.menuOrder ?? data.order ?? 0,
     });
 
     // Add image reference if image provided
@@ -203,10 +279,6 @@ export class InformationService {
     if (!information) {
       throw new NotFoundError('Information not found');
     }
-
-    // Sanitize empty strings to null for ObjectId fields
-    if (data.image === '') data.image = undefined;
-    if (data.parentId === '') data.parentId = null;
 
     // Handle image reference changes
     if (data.image !== undefined) {
@@ -296,6 +368,14 @@ export class InformationService {
     if (children > 0) {
       throw new BadRequestError(
         'Cannot delete category with children. Delete children first.'
+      );
+    }
+
+    // Check if has blogs
+    const blogCount = await Blog.countDocuments({ informationId: id });
+    if (blogCount > 0) {
+      throw new BadRequestError(
+        `Cannot delete category with ${blogCount} active blogs. Remove or reassign blogs first.`
       );
     }
 

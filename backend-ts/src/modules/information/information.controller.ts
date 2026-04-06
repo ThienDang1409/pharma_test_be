@@ -44,6 +44,21 @@ export const getInformationTree = asyncHandler(
   }
 );
 
+// @desc    Get dynamic navigation for menu
+// @route   GET /api/information/navigation
+// @access  Public
+export const getNavigation = asyncHandler(
+  async (req: IAuthRequest, res: Response): Promise<void> => {
+    const navigation = await informationService.getNavigation();
+
+    res.status(200).json({
+      success: true,
+      statusCode: 200,
+      data: navigation,
+    });
+  }
+);
+
 // @desc    Get information by ID
 // @route   GET /api/information/:id
 // @access  Public

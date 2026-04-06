@@ -25,7 +25,10 @@ export const CreateBlogSchema = z.object({
   
   image: z
     .string()
-    .optional(),
+    .trim()
+    .nullable()
+    .optional()
+    .transform(val => val === '' ? null : val),
   
   excerpt: z
     .string()
@@ -41,6 +44,7 @@ export const CreateBlogSchema = z.object({
   
   informationId: z
     .string()
+    .trim()
     .min(1, 'Information ID is required'),
   
   tags: z

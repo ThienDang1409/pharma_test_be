@@ -10,6 +10,11 @@ export interface IInformation extends Document {
   parentId?: string | null;
   order: number;
   isActive: boolean;
+  // Navigation fields
+  showInMenu: boolean;
+  dropdownType: 'children' | 'blogs' | 'none';
+  includeSelfInDropdown: boolean;
+  menuOrder: number;
   createdAt: Date;
   updatedAt: Date;
 }

@@ -19,12 +19,7 @@ export class BlogService {
     if (status) queryFilter.status = status;
     if (isProduct !== undefined) queryFilter.isProduct = isProduct === 'true';
     if (search) {
-      queryFilter.$or = [
-        { title: { $regex: search, $options: 'i' } },
-        { title_en: { $regex: search, $options: 'i' } },
-        { excerpt: { $regex: search, $options: 'i' } },
-        { excerpt_en: { $regex: search, $options: 'i' } },
-      ];
+      queryFilter.$text = { $search: search };
     }
     if (tags) {
       queryFilter.tags = { $in: tags.split(',') };
@@ -101,9 +96,6 @@ export class BlogService {
       throw new BadRequestError(ERROR_MESSAGES.TITLE_REQUIRED);
     }
 
-    // Sanitize empty strings to null for ObjectId fields
-    if (data.image === '') data.image = undefined;
-
     // Generate slug from title
     const baseSlug = generateSlug(data.title);
     const uniqueSlug = await generateUniqueSlug(baseSlug, Blog);
@@ -148,9 +140,6 @@ export class BlogService {
     if (!blog) {
       throw new NotFoundError(ERROR_MESSAGES.BLOG_NOT_FOUND);
     }
-
-    // Sanitize empty strings to null for ObjectId fields
-    if (data.image === '') data.image = undefined;
 
     const session = await mongoose.startSession();
 

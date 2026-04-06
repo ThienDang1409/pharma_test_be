@@ -48,6 +48,25 @@ const InformationSchema = new Schema<IInformation>(
       default: true,
       index: true,
     },
+    showInMenu: {
+      type: Boolean,
+      default: true,
+      index: true,
+    },
+    dropdownType: {
+      type: String,
+      enum: ['children', 'blogs', 'none'],
+      default: 'children',
+    },
+    includeSelfInDropdown: {
+      type: Boolean,
+      default: false,
+    },
+    menuOrder: {
+      type: Number,
+      default: 0,
+      index: true,
+    },
   },
   {
     timestamps: true,
@@ -57,8 +76,8 @@ const InformationSchema = new Schema<IInformation>(
 
 // Indexes for better query performance
 InformationSchema.index({ parentId: 1, order: 1 });
-InformationSchema.index({ slug: 1 });
-InformationSchema.index({ isActive: 1 });
+// InformationSchema.index({ slug: 1 });
+// InformationSchema.index({ isActive: 1 });
 
 // Virtual populate for children
 InformationSchema.virtual('children', {

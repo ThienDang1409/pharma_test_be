@@ -5,6 +5,7 @@ import {
   getInformationById,
   getInformationBySlug,
   getChildren,
+  getNavigation,
   createInformation,
   updateInformation,
   deleteInformation,
@@ -49,6 +50,17 @@ router.get('/', validateWithZod(informationQuerySchema, 'query'), getAllInformat
  *         description: Information tree.
  */
 router.get('/tree', getInformationTree);
+/**
+ * @swagger
+ * /api/information/navigation:
+ *   get:
+ *     summary: Get dropdown-optimized navigation structure
+ *     tags: [Information]
+ *     responses:
+ *       200:
+ *         description: Navigation structure.
+ */
+router.get('/navigation', getNavigation);
 /**
  * @swagger
  * /api/information/slug/{slug}:

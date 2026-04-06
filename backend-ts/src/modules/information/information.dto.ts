@@ -14,6 +14,10 @@ export interface CreateInformationDto {
   parentId?: string | null;
   order?: number;
   isActive?: boolean;
+  showInMenu?: boolean;
+  dropdownType?: 'children' | 'blogs' | 'none';
+  includeSelfInDropdown?: boolean;
+  menuOrder?: number;
 }
 
 export interface UpdateInformationDto {
@@ -25,6 +29,10 @@ export interface UpdateInformationDto {
   parentId?: string | null;
   order?: number;
   isActive?: boolean;
+  showInMenu?: boolean;
+  dropdownType?: 'children' | 'blogs' | 'none';
+  includeSelfInDropdown?: boolean;
+  menuOrder?: number;
 }
 
 export interface InformationQueryDto {
@@ -47,6 +55,10 @@ export interface InformationResponseDto {
   parentId?: string | null;
   order: number;
   isActive: boolean;
+  showInMenu: boolean;
+  dropdownType: 'children' | 'blogs' | 'none';
+  includeSelfInDropdown: boolean;
+  menuOrder: number;
   children?: InformationResponseDto[];
   createdAt: Date;
   updatedAt: Date;
@@ -54,4 +66,19 @@ export interface InformationResponseDto {
 
 export interface InformationTreeDto extends InformationResponseDto {
   children: InformationTreeDto[];
+}
+
+export interface InformationNavigationDto {
+  _id: string;
+  name: string;
+  name_en: string;
+  slug: string;
+  dropdownType: 'children' | 'blogs' | 'none';
+  items: Array<{
+    _id: string;
+    name: string;
+    name_en: string;
+    slug: string;
+    type: 'category' | 'blog';
+  }>;
 }
