@@ -52,9 +52,14 @@ export interface BlogQueryDto {
   isProduct?: string;
   search?: string;
   tags?: string;
+  informationId?: string;
+  includeDescendants?: string;
 }
 
-export interface BlogResponseDto {
+/**
+ * Lightweight DTO for list views (no sections for performance)
+ */
+export interface BlogListItemDto {
   id: string;
   title: string;
   title_en?: string;
@@ -65,10 +70,16 @@ export interface BlogResponseDto {
   excerpt_en?: string;
   informationId: InformationPreviewDto | string;
   tags: string[];
-  sections: ISection[];
   isProduct: boolean;
   status: 'draft' | 'published';
   publishedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
+}
+
+/**
+ * Full DTO for detail views (includes sections)
+ */
+export interface BlogResponseDto extends BlogListItemDto {
+  sections: ISection[];
 }

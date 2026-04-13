@@ -27,6 +27,33 @@ const router = Router();
  *         description: A list of blogs.
  */
 router.get('/', validateWithZod(BlogQuerySchema, 'query'), blogController.getAllBlogs);
+
+/**
+ * @swagger
+ * /api/blog/exact-category:
+ *   get:
+ *     summary: Get blogs for exact category only (no descendant categories)
+ *     tags: [Blog]
+ *     parameters:
+ *       - in: query
+ *         name: informationId
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: A list of blogs for exact category.
+ */
+router.get('/exact-category', validateWithZod(BlogQuerySchema, 'query'), blogController.getAllBlogsExactCategory);
+
 /**
  * @swagger
  * /api/blog/slug/{slug}:

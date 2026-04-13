@@ -117,6 +117,15 @@ export const BlogQuerySchema = z.object({
     .string()
     .trim()
     .optional(),
+  
+  informationId: z
+    .string()
+    .trim()
+    .optional(),
+  
+  includeDescendants: z
+    .enum(['true', 'false'])
+    .optional(),
 });
 
 // Type inference from schemas

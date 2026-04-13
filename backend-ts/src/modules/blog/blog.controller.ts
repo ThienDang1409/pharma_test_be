@@ -24,6 +24,24 @@ export const getAllBlogs = asyncHandler(async (
   });
 });
 
+// @desc    Get blogs for exact category only (no descendant categories)
+// @route   GET /api/blogs/exact-category?informationId=xxx
+// @access  Public
+export const getAllBlogsExactCategory = asyncHandler(async (
+  req: IAuthRequest,
+  res: Response,
+): Promise<void> => {
+  const query: BlogQueryDto = req.query as any;
+  const result = await blogService.getAllBlogsExactCategory(query);
+
+  res.status(200).json({
+    success: true,
+    statusCode: 200,
+    message: 'Blogs for exact category retrieved successfully',
+    data: result,
+  });
+});
+
 // @desc    Get single blog by ID
 // @route   GET /api/blogs/:id?lang=vi
 // @access  Public
@@ -31,7 +49,7 @@ export const getBlogById = asyncHandler(async (
   req: IAuthRequest,
   res: Response,
 ): Promise<void> => {
-  const blog = await blogService.getBlogById(req.params.id);
+  const blog = await blogService.getBlogById(req.params.id as string);
 
   res.status(200).json({
     success: true,
@@ -48,7 +66,7 @@ export const getBlogBySlug = asyncHandler(async (
   req: IAuthRequest,
   res: Response,
 ): Promise<void> => {
-  const blog = await blogService.getBlogBySlug(req.params.slug);
+  const blog = await blogService.getBlogBySlug(req.params.slug as string);
 
   res.status(200).json({
     success: true,
@@ -84,7 +102,7 @@ export const updateBlog = asyncHandler(async (
   res: Response,
 ): Promise<void> => {
   const data: UpdateBlogDto = req.body;
-  const blog = await blogService.updateBlog(req.params.id, data);
+  const blog = await blogService.updateBlog(req.params.id as string, data);
 
   res.status(200).json({
     success: true,
@@ -101,7 +119,7 @@ export const deleteBlog = asyncHandler(async (
   req: IAuthRequest,
   res: Response,
 ): Promise<void> => {
-  await blogService.deleteBlog(req.params.id);
+  await blogService.deleteBlog(req.params.id as string);
 
   res.status(200).json({
     success: true,
