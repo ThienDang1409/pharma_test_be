@@ -6,6 +6,9 @@ import { asyncHandler } from '../../common/middleware';
 
 const userService = new UserService();
 
+const toParamString = (value: string | string[] | undefined): string =>
+  Array.isArray(value) ? (value[0] ?? '') : (value ?? '');
+
 // @desc    Get all users
 // @route   GET /api/users
 // @access  Private/Admin
@@ -27,7 +30,7 @@ export const getAllUsers = asyncHandler(
 // @access  Private/Admin
 export const getUserById = asyncHandler(
   async (req: IAuthRequest, res: Response): Promise<void> => {
-    const user = await userService.getUserById(req.params.id);
+    const user = await userService.getUserById(toParamString(req.params.id));
 
     res.status(200).json({
       success: true,
@@ -43,7 +46,7 @@ export const getUserById = asyncHandler(
 export const updateUser = asyncHandler(
   async (req: IAuthRequest, res: Response): Promise<void> => {
     const data: UpdateUserDto = req.body;
-    const user = await userService.updateUser(req.params.id, data);
+    const user = await userService.updateUser(toParamString(req.params.id), data);
 
     res.status(200).json({
       success: true,
@@ -59,7 +62,7 @@ export const updateUser = asyncHandler(
 // @access  Private/Admin
 export const deleteUser = asyncHandler(
   async (req: IAuthRequest, res: Response): Promise<void> => {
-    await userService.deleteUser(req.params.id);
+    await userService.deleteUser(toParamString(req.params.id));
 
     res.status(200).json({
       success: true,

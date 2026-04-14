@@ -10,6 +10,9 @@ import { asyncHandler } from '../../common/middleware';
 
 const informationService = new InformationService();
 
+const toParamString = (value: string | string[] | undefined): string =>
+  Array.isArray(value) ? (value[0] ?? '') : (value ?? '');
+
 // @desc    Get all information
 // @route   GET /api/information
 // @access  Public
@@ -50,7 +53,7 @@ export const getInformationTree = asyncHandler(
 export const getInformationById = asyncHandler(
   async (req: IAuthRequest, res: Response): Promise<void> => {
     const information = await informationService.getInformationById(
-      req.params.id
+      toParamString(req.params.id)
     );
 
     res.status(200).json({
@@ -67,7 +70,7 @@ export const getInformationById = asyncHandler(
 export const getInformationBySlug = asyncHandler(
   async (req: IAuthRequest, res: Response): Promise<void> => {
     const information = await informationService.getInformationBySlug(
-      req.params.slug
+      toParamString(req.params.slug)
     );
 
     res.status(200).json({
@@ -83,7 +86,7 @@ export const getInformationBySlug = asyncHandler(
 // @access  Public
 export const getChildren = asyncHandler(
   async (req: IAuthRequest, res: Response): Promise<void> => {
-    const children = await informationService.getChildren(req.params.id);
+    const children = await informationService.getChildren(toParamString(req.params.id));
 
     res.status(200).json({
       success: true,
@@ -117,7 +120,7 @@ export const updateInformation = asyncHandler(
   async (req: IAuthRequest, res: Response): Promise<void> => {
     const data: UpdateInformationDto = req.body;
     const information = await informationService.updateInformation(
-      req.params.id,
+      toParamString(req.params.id),
       data
     );
 
@@ -135,7 +138,7 @@ export const updateInformation = asyncHandler(
 // @access  Private/Admin
 export const deleteInformation = asyncHandler(
   async (req: IAuthRequest, res: Response): Promise<void> => {
-    await informationService.deleteInformation(req.params.id);
+    await informationService.deleteInformation(toParamString(req.params.id));
 
     res.status(200).json({
       success: true,

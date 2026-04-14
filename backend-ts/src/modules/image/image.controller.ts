@@ -14,6 +14,9 @@ import { BadRequestError } from '../../common/exceptions';
 
 const imageService = new ImageService();
 
+const toParamString = (value: string | string[] | undefined): string =>
+  Array.isArray(value) ? (value[0] ?? '') : (value ?? '');
+
 // @desc    Upload single image
 // @route   POST /api/images/upload
 // @access  Private
@@ -81,7 +84,7 @@ export const getAllImages = asyncHandler(
 // @access  Private
 export const getImageById = asyncHandler(
   async (req: IAuthRequest, res: Response): Promise<void> => {
-    const image = await imageService.getImageById(req.params.id);
+    const image = await imageService.getImageById(toParamString(req.params.id));
 
     res.status(200).json({
       success: true,
@@ -97,7 +100,7 @@ export const getImageById = asyncHandler(
 export const updateImage = asyncHandler(
   async (req: IAuthRequest, res: Response): Promise<void> => {
     const dto: UpdateImageDto = req.body;
-    const image = await imageService.updateImage(req.params.id, dto);
+    const image = await imageService.updateImage(toParamString(req.params.id), dto);
 
     res.status(200).json({
       success: true,
@@ -114,7 +117,7 @@ export const updateImage = asyncHandler(
 export const addReference = asyncHandler(
   async (req: IAuthRequest, res: Response): Promise<void> => {
     const dto: AddReferenceDto = req.body;
-    const image = await imageService.addReference(req.params.id, dto);
+    const image = await imageService.addReference(toParamString(req.params.id), dto);
 
     res.status(200).json({
       success: true,
@@ -131,7 +134,7 @@ export const addReference = asyncHandler(
 export const removeReference = asyncHandler(
   async (req: IAuthRequest, res: Response): Promise<void> => {
     const dto: RemoveReferenceDto = req.body;
-    const result = await imageService.removeReference(req.params.id, dto);
+    const result = await imageService.removeReference(toParamString(req.params.id), dto);
 
     if (result.deleted) {
       res.status(200).json({
@@ -156,7 +159,7 @@ export const removeReference = asyncHandler(
 export const transformImage = asyncHandler(
   async (req: IAuthRequest, res: Response): Promise<void> => {
     const dto: TransformImageDto = req.body;
-    const result = await imageService.transformImage(req.params.id, dto);
+    const result = await imageService.transformImage(toParamString(req.params.id), dto);
 
     res.status(200).json({
       success: true,
@@ -172,7 +175,7 @@ export const transformImage = asyncHandler(
 // @access  Private/Admin
 export const deleteImage = asyncHandler(
   async (req: IAuthRequest, res: Response): Promise<void> => {
-    await imageService.deleteImage(req.params.id);
+    await imageService.deleteImage(toParamString(req.params.id));
 
     res.status(200).json({
       success: true,
@@ -204,7 +207,8 @@ export const cleanupUnused = asyncHandler(
 // @access  Private
 export const getImagesByEntity = asyncHandler(
   async (req: IAuthRequest, res: Response): Promise<void> => {
-    const { entityType, entityId } = req.params;
+    const entityType = toParamString(req.params.entityType);
+    const entityId = toParamString(req.params.entityId);
     const images = await imageService.getImagesByEntity(entityType, entityId);
 
     res.status(200).json({

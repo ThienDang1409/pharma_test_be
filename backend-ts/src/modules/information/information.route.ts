@@ -83,6 +83,7 @@ router.get('/slug/:slug', getInformationBySlug);
  *         description: A single info item.
  */
 router.get('/:id', getInformationById);
+router.get('/parent/:id', getChildren);
 /**
  * @swagger
  * /api/information/{id}/children:

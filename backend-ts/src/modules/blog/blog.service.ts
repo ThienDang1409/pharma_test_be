@@ -11,6 +11,31 @@ import { logger } from '../../common/logger';
 import Information from '../information/information.model';
 
 export class BlogService {
+  private toBoolean(value: unknown): boolean | undefined {
+    if (typeof value === 'boolean') return value;
+    if (typeof value === 'string') {
+      if (value === 'true') return true;
+      if (value === 'false') return false;
+    }
+    return undefined;
+  }
+
+  private getPreferredSlugSource(title?: string, titleEn?: string): string {
+    return (titleEn || title || '').trim();
+  }
+
+  private normalizeSections(sections?: any[]): any[] | undefined {
+    if (!sections) return undefined;
+
+    return sections.map((sec, index) => {
+      const base = this.getPreferredSlugSource(sec?.title, sec?.title_en);
+      return {
+        ...sec,
+        slug: generateSlug(base || `section-${index + 1}`),
+      };
+    });
+  }
+
   /**
    * Get all descendant IDs of a category (including itself)
    */
@@ -37,7 +62,8 @@ export class BlogService {
     // Build query
     const queryFilter: any = {};
     if (status) queryFilter.status = status;
-    if (isProduct !== undefined) queryFilter.isProduct = isProduct === 'true';
+    const isProductBool = this.toBoolean(isProduct);
+    if (isProductBool !== undefined) queryFilter.isProduct = isProductBool;
     
     // Handle hierarchical category filtering
     if (informationId) {
@@ -103,7 +129,8 @@ export class BlogService {
       informationId: informationId,
     };
     if (status) queryFilter.status = status;
-    if (isProduct !== undefined) queryFilter.isProduct = isProduct === 'true';
+    const isProductBool = this.toBoolean(isProduct);
+    if (isProductBool !== undefined) queryFilter.isProduct = isProductBool;
     
     if (search) {
       queryFilter.$or = [
@@ -191,8 +218,8 @@ export class BlogService {
     // Sanitize empty strings to null for ObjectId fields
     if (data.image === '') data.image = undefined;
 
-    // Generate slug from title
-    const baseSlug = generateSlug(data.title);
+    // Generate blog slug with EN-first strategy
+    const baseSlug = generateSlug(this.getPreferredSlugSource(data.title, data.title_en));
     const uniqueSlug = await generateUniqueSlug(baseSlug, Blog);
 
     const session = await mongoose.startSession();
@@ -200,11 +227,8 @@ export class BlogService {
 
     try {
       await session.withTransaction(async () => {
-        // Process sections to ensure slugs exist
-        const processedSections = data.sections?.map(sec => ({
-          ...sec,
-          slug: sec.slug || generateSlug(sec.title)
-        }));
+        // Process sections with EN-first slug strategy
+        const processedSections = this.normalizeSections(data.sections);
 
         // Create blog
         const blogs = await Blog.create([{
@@ -278,9 +302,11 @@ export class BlogService {
           }
         }
 
-        // If title changed, regenerate slug
-        if (data.title && data.title !== blog.title) {
-          const baseSlug = generateSlug(data.title);
+        // If title/title_en changed, regenerate blog slug with EN-first strategy
+        if (data.title !== undefined || data.title_en !== undefined) {
+          const nextTitle = data.title ?? blog.title;
+          const nextTitleEn = data.title_en ?? blog.title_en;
+          const baseSlug = generateSlug(this.getPreferredSlugSource(nextTitle, nextTitleEn));
           const uniqueSlug = await generateUniqueSlug(baseSlug, Blog, id);
           blog.slug = uniqueSlug;
         }
@@ -296,10 +322,7 @@ export class BlogService {
         if (data.tags !== undefined) blog.tags = data.tags;
         
         if (data.sections !== undefined) {
-          blog.sections = data.sections.map(sec => ({
-            ...sec,
-            slug: sec.slug || generateSlug(sec.title)
-          }));
+          blog.sections = this.normalizeSections(data.sections) as any;
         }
         
         if (data.isProduct !== undefined) blog.isProduct = data.isProduct;

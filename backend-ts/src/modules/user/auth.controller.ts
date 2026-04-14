@@ -72,6 +72,39 @@ export const refreshToken = asyncHandler(
   }
 );
 
+// @desc    Request forgot password token
+// @route   POST /api/auth/forgot-password
+// @access  Public
+export const forgotPassword = asyncHandler(
+  async (req: IAuthRequest, res: Response): Promise<void> => {
+    const { email } = req.body;
+    const token = await userService.forgotPassword(email);
+
+    res.status(200).json({
+      success: true,
+      statusCode: 200,
+      message: 'Password reset token created',
+      data: { token },
+    });
+  }
+);
+
+// @desc    Reset password with token
+// @route   PUT /api/auth/reset-password
+// @access  Public
+export const resetPassword = asyncHandler(
+  async (req: IAuthRequest, res: Response): Promise<void> => {
+    const { token, password } = req.body;
+    await userService.resetPassword(token, password);
+
+    res.status(200).json({
+      success: true,
+      statusCode: 200,
+      message: 'Password reset successfully',
+    });
+  }
+);
+
 // @desc    Logout user
 // @route   POST /api/auth/logout
 // @access  Private

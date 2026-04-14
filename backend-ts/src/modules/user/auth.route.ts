@@ -3,6 +3,8 @@ import {
   register,
   login,
   refreshToken,
+  forgotPassword,
+  resetPassword,
   logout,
   getMe,
   updateProfile,
@@ -13,6 +15,8 @@ import { validateWithZod } from '../../common/middleware/zod-validate.middleware
 import {
   registerSchema,
   loginSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
   updateProfileSchema,
   changePasswordSchema,
 } from '../../common/validators/user.validator';
@@ -86,6 +90,8 @@ router.post('/login', validateWithZod(loginSchema), login);
  *         description: OK
  */
 router.post('/refresh-token', refreshToken);
+router.post('/forgot-password', validateWithZod(forgotPasswordSchema), forgotPassword);
+router.put('/reset-password', validateWithZod(resetPasswordSchema), resetPassword);
 
 // Protected routes
 /**

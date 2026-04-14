@@ -38,6 +38,19 @@ export const changePasswordSchema = z.object({
     .min(6, 'New password must be at least 6 characters'),
 });
 
+export const forgotPasswordSchema = z.object({
+  email: z
+    .string({ message: 'Email is required' })
+    .email('Invalid email format'),
+});
+
+export const resetPasswordSchema = z.object({
+  token: z.string({ message: 'Reset token is required' }).min(1, 'Reset token is required'),
+  password: z
+    .string({ message: 'Password is required' })
+    .min(6, 'Password must be at least 6 characters'),
+});
+
 // Update User Schema (Admin)
 export const updateUserSchema = z.object({
   email: z.string().email('Invalid email format').optional(),

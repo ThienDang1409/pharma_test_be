@@ -1,4 +1,5 @@
 import User from './user.model';
+import crypto from 'crypto';
 import { IUser } from './user.interface';
 import {
   CreateUserDto,
@@ -134,6 +135,41 @@ export class UserService {
       accessToken: newAccessToken,
       refreshToken: newRefreshToken,
     };
+  }
+
+  // Generate reset token for forgot password flow
+  async forgotPassword(email: string): Promise<string> {
+    const user = await User.findOne({ email }).select('+resetPasswordToken +resetPasswordExpires');
+
+    // Keep same message behavior for unknown emails to avoid account enumeration.
+    if (!user) {
+      return '';
+    }
+
+    const resetToken = user.generateResetToken();
+    await user.save();
+
+    return resetToken;
+  }
+
+  // Reset password with token
+  async resetPassword(token: string, password: string): Promise<void> {
+    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+
+    const user = await User.findOne({
+      resetPasswordToken: hashedToken,
+      resetPasswordExpires: { $gt: new Date() },
+    }).select('+password +resetPasswordToken +resetPasswordExpires');
+
+    if (!user) {
+      throw new BadRequestError('Reset token is invalid or expired');
+    }
+
+    user.password = password;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    user.refreshToken = undefined;
+    await user.save();
   }
 
   // Logout user

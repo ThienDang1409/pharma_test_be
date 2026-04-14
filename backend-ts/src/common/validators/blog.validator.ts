@@ -52,7 +52,7 @@ export const CreateBlogSchema = z.object({
       z.object({
         title: z.string().min(1, 'Section title required'),
         title_en: z.string().optional(),
-        slug: z.string().min(1, 'Section slug required'),
+        slug: z.string().optional(),
         type: z.string().min(1, 'Section type required'),
         content: z.string().min(1, 'Section content required'),
         content_en: z.string().optional(),
@@ -73,7 +73,8 @@ export const CreateBlogSchema = z.object({
     .string()
     .min(VALIDATION_RULES.SLUG_MIN_LENGTH, 'Slug too short')
     .max(VALIDATION_RULES.SLUG_MAX_LENGTH, 'Slug too long')
-    .trim(),
+    .trim()
+    .optional(),
 });
 
 /**

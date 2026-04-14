@@ -114,10 +114,10 @@ router.get('/:id', blogController.getBlogById);
  *         description: Created
  */
 router.post(
-    '/', 
-    authenticate, 
-    authorize('admin'), 
-    validateWithZod(CreateBlogSchema), 
+    '/',
+    authenticate,
+    authorize('admin'),
+    validateWithZod(CreateBlogSchema),
     blogController.createBlog
 );
 
@@ -149,12 +149,12 @@ router.post(
  *         description: Updated
  */
 router.put(
-    '/:id', 
-    authenticate, 
-    authorize('admin'), 
+    '/:id',
+    authenticate,
+    authorize('admin'),
     validateWithZod(UpdateBlogSchema),
-     blogController.updateBlog
-    );
+    blogController.updateBlog
+);
 
 /**
  * @swagger
@@ -175,9 +175,9 @@ router.put(
  *         description: Deleted
  */
 router.delete(
-    '/:id', 
-    authenticate, 
-    authorize('admin'), 
+    '/:id',
+    authenticate,
+    authorize('admin'),
     blogController.deleteBlog
 );
 
