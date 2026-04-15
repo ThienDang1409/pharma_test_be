@@ -11,6 +11,9 @@ import { logger } from '../../common/logger';
 import Information from '../information/information.model';
 
 export class BlogService {
+  private readonly listProjection =
+    'title title_en slug author image excerpt excerpt_en informationId tags isProduct status publishedAt createdAt updatedAt';
+
   private toBoolean(value: unknown): boolean | undefined {
     if (typeof value === 'boolean') return value;
     if (typeof value === 'string') {
@@ -94,6 +97,7 @@ export class BlogService {
 
     // Execute query with pagination
     const blogs = await Blog.find(queryFilter)
+      .select(this.listProjection)
       .populate({
         path: 'image',
         select: 'cloudinaryUrl cloudinaryPublicId _id',
@@ -104,7 +108,8 @@ export class BlogService {
       })
       .limit(limitNum)
       .skip((pageNum - 1) * limitNum)
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
 
     const count = await Blog.countDocuments(queryFilter);
 
@@ -149,6 +154,7 @@ export class BlogService {
 
     // Execute query with pagination
     const blogs = await Blog.find(queryFilter)
+      .select(this.listProjection)
       .populate({
         path: 'image',
         select: 'cloudinaryUrl cloudinaryPublicId _id',
@@ -159,7 +165,8 @@ export class BlogService {
       })
       .limit(limitNum)
       .skip((pageNum - 1) * limitNum)
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
 
     const count = await Blog.countDocuments(queryFilter);
 
@@ -379,7 +386,7 @@ export class BlogService {
   }
 
   // Helper: Map blog to list item DTO (lightweight - no sections)
-  private mapToListItemDto(blog: IBlog): BlogListItemDto {
+  private mapToListItemDto(blog: any): BlogListItemDto {
     return {
       id: blog._id.toString(),
       title: blog.title,

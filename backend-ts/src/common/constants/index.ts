@@ -37,6 +37,7 @@ export const API_ROUTES = {
   USERS: '/api/users',
   INFORMATION: '/api/informations',
   IMAGES: '/api/images',
+  CONTACT: '/api/contact',
 } as const;
 
 // Validation Rules

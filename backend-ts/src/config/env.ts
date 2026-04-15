@@ -22,6 +22,36 @@ const envSchema = z.object({
   cloudinary_Config_Cloud_Name: z.string().optional(),
   cloudinary_Config_api_key: z.string().optional(),
   cloudinary_Config_api_secret: z.string().optional(),
+
+  // SMTP / Contact (Optional)
+  SMTP_HOST: z
+    .string()
+    .optional()
+    .transform((value) => (value && value.trim() ? value.trim() : 'smtp.gmail.com')),
+  SMTP_PORT: z
+    .string()
+    .optional()
+    .transform((value) => Number(value || 587)),
+  SMTP_SECURE: z
+    .enum(['true', 'false'])
+    .optional()
+    .transform((value) => value === 'true'),
+  SMTP_USER: z
+    .string()
+    .optional()
+    .transform((value) => (value && value.trim() ? value.trim() : '')),
+  SMTP_PASS: z
+    .string()
+    .optional()
+    .transform((value) => (value && value.trim() ? value.trim() : '')),
+  SMTP_FROM_NAME: z
+    .string()
+    .optional()
+    .transform((value) => (value && value.trim() ? value.trim() : 'Pharma Test Contact Form')),
+  CONTACT_RECEIVER_EMAIL: z
+    .string()
+    .optional()
+    .transform((value) => (value && value.trim() ? value.trim() : 'va@vietanh.vn')),
 });
 
 // Validate `process.env`

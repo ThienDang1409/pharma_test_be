@@ -1,5 +1,12 @@
 import { Router, Express } from 'express';
-import { blogRoute, authRoute, userRoute, informationRoute, imageRoute } from '../modules';
+import {
+  blogRoute,
+  authRoute,
+  userRoute,
+  informationRoute,
+  imageRoute,
+  contactRoute,
+} from '../modules';
 import { API_ROUTES } from '../common/constants';
 
 /**
@@ -21,6 +28,9 @@ export const setupRoutes = (app: Express): void => {
   
   // Image routes
   app.use(API_ROUTES.IMAGES, imageRoute);
+
+  // Contact routes
+  app.use(API_ROUTES.CONTACT, contactRoute);
 };
 
 export default setupRoutes;
