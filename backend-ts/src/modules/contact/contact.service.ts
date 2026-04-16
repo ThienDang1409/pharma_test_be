@@ -19,7 +19,7 @@ interface ContactPayload {
 }
 
 export class ContactService {
-  private readonly receiverEmail = config.contactReceiverEmail || 'va@vietanh.vn';
+  private readonly receiverEmail = config.contactReceiverEmail || 'trung.nt@vietanh.vn';
 
   private isSmtpConfigured(): boolean {
     return Boolean(config.smtpUser && config.smtpPass);
