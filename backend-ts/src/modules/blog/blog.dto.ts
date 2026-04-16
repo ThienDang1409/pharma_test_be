@@ -35,7 +35,7 @@ export interface UpdateBlogDto {
   title?: string;
   title_en?: string;
   author?: string;
-  image?: string;
+  image?: string | null;
   excerpt?: string;
   excerpt_en?: string;
   informationId?: string;

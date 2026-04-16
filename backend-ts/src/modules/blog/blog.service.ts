@@ -292,8 +292,8 @@ export class BlogService {
       throw new NotFoundError(ERROR_MESSAGES.BLOG_NOT_FOUND);
     }
 
-    // Sanitize empty strings to null for ObjectId fields
-    if (data.image === '') data.image = undefined;
+    // Empty string from FE means clear current image
+    if (data.image === '') data.image = null;
     const normalizedAuthor = this.normalizeAuthor(data.author);
 
     const session = await mongoose.startSession();
@@ -303,14 +303,17 @@ export class BlogService {
         // Handle image reference changes
         if (data.image !== undefined) {
           const imageService = new ImageService();
-          const oldImage = blog.image as unknown as string; // image is populated or objectid string
-          const newImage = data.image;
+          const oldImageId = blog.image ? String(blog.image) : null;
+          const newImageId =
+            typeof data.image === 'string' && data.image.trim().length > 0
+              ? data.image.trim()
+              : null;
 
           // If image changed, update references
-          if (oldImage !== newImage) {
+          if (oldImageId !== newImageId) {
             // Remove old reference
-            if (oldImage && typeof oldImage === 'string') {
-              await imageService.removeReference(oldImage, {
+            if (oldImageId) {
+              await imageService.removeReference(oldImageId, {
                 entityType: 'blog',
                 entityId: id,
                 field: 'image',
@@ -318,14 +321,16 @@ export class BlogService {
             }
 
             // Add new reference
-            if (newImage && typeof newImage === 'string') {
-              await imageService.addReference(newImage, {
+            if (newImageId) {
+              await imageService.addReference(newImageId, {
                 entityType: 'blog',
                 entityId: id,
                 field: 'image',
               }, session);
             }
           }
+
+          data.image = newImageId;
         }
 
         // If title/title_en changed, regenerate blog slug with EN-first strategy

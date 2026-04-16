@@ -6,6 +6,7 @@ import {
   informationRoute,
   imageRoute,
   contactRoute,
+  dashboardRoute,
 } from '../modules';
 import { API_ROUTES } from '../common/constants';
 
@@ -31,6 +32,9 @@ export const setupRoutes = (app: Express): void => {
 
   // Contact routes
   app.use(API_ROUTES.CONTACT, contactRoute);
+
+  // Dashboard routes
+  app.use(API_ROUTES.DASHBOARD, dashboardRoute);
 };
 
 export default setupRoutes;

@@ -204,22 +204,25 @@ export class InformationService {
       throw new NotFoundError('Information not found');
     }
 
-    // Sanitize empty strings to null for ObjectId fields
-    if (data.image === '') data.image = undefined;
+    // Empty string from FE means clear current image
+    if (data.image === '') data.image = null;
     if (data.parentId === '') data.parentId = null;
 
     // Handle image reference changes
     if (data.image !== undefined) {
       const imageService = new ImageService();
-      const oldImage = information.image;
-      const newImage = data.image;
+      const oldImageId = information.image ? String(information.image) : null;
+      const newImageId =
+        typeof data.image === 'string' && data.image.trim().length > 0
+          ? data.image.trim()
+          : null;
 
       // If image changed, update references
-      if (oldImage !== newImage) {
+      if (oldImageId !== newImageId) {
         // Remove old reference
-        if (oldImage) {
+        if (oldImageId) {
           try {
-            await imageService.removeReference(oldImage, {
+            await imageService.removeReference(oldImageId, {
               entityType: 'information',
               entityId: id,
               field: 'image',
@@ -230,9 +233,9 @@ export class InformationService {
         }
 
         // Add new reference
-        if (newImage) {
+        if (newImageId) {
           try {
-            await imageService.addReference(newImage, {
+            await imageService.addReference(newImageId, {
               entityType: 'information',
               entityId: id,
               field: 'image',
@@ -242,6 +245,8 @@ export class InformationService {
           }
         }
       }
+
+      data.image = newImageId;
     }
 
     // Validate parent exists if parentId provided

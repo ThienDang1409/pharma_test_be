@@ -38,6 +38,7 @@ export const API_ROUTES = {
   INFORMATION: '/api/informations',
   IMAGES: '/api/images',
   CONTACT: '/api/contact',
+  DASHBOARD: '/api/dashboard',
 } as const;
 
 // Validation Rules

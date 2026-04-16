@@ -21,7 +21,7 @@ export interface UpdateInformationDto {
   name_en?: string;
   description?: string;
   description_en?: string;
-  image?: string;
+  image?: string | null;
   parentId?: string | null;
   order?: number;
   isActive?: boolean;
