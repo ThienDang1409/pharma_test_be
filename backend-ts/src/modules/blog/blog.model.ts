@@ -4,7 +4,7 @@ import { IBlog, ISection } from './blog.interface';
 
 const SectionSchema = new Schema<ISection>(
   {
-    title: { type: String, required: true },
+    title: { type: String, trim: true },
     title_en: { type: String },
     slug: { type: String, required: true },
     type: { type: String, required: true },

@@ -1,7 +1,7 @@
 import { Document } from 'mongoose';
 
 export interface ISection {
-  title: string;
+  title?: string;
   title_en?: string;
   slug: string;
   type: string;

@@ -17,11 +17,13 @@ export const CreateBlogSchema = z.object({
     .optional(),
   
   author: z
-    .string()
-    .min(1, 'Author is required')
-    .max(100, 'Author too long')
-    .trim()
-    .optional(),
+    .preprocess(
+      (value) => (typeof value === 'string' ? value.trim() : value),
+      z
+        .string()
+        .max(100, 'Author too long')
+        .optional()
+    ),
   
   image: z
     .string()
@@ -50,7 +52,10 @@ export const CreateBlogSchema = z.object({
   sections: z
     .array(
       z.object({
-        title: z.string().min(1, 'Section title required'),
+        title: z.preprocess(
+          (value) => (typeof value === 'string' ? value.trim() || undefined : value),
+          z.string().optional()
+        ),
         title_en: z.string().optional(),
         slug: z.string().optional(),
         type: z.string().min(1, 'Section type required'),

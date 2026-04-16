@@ -47,7 +47,7 @@ const envSchema = z.object({
   SMTP_FROM_NAME: z
     .string()
     .optional()
-    .transform((value) => (value && value.trim() ? value.trim() : 'Pharma Test Contact Form')),
+    .transform((value) => (value && value.trim() ? value.trim() : 'VietAnh Instrument Contact Form')),
   CONTACT_RECEIVER_EMAIL: z
     .string()
     .optional()

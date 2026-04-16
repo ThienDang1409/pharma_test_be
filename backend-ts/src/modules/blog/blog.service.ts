@@ -27,13 +27,29 @@ export class BlogService {
     return (titleEn || title || '').trim();
   }
 
+  private normalizeAuthor(author?: string): string | undefined {
+    if (typeof author !== 'string') return undefined;
+    const trimmed = author.trim();
+    return trimmed.length > 0 ? trimmed : DEFAULTS.BLOG_AUTHOR;
+  }
+
+  private normalizeOptionalText(value?: string): string | undefined {
+    if (typeof value !== 'string') return undefined;
+    const trimmed = value.trim();
+    return trimmed.length > 0 ? trimmed : undefined;
+  }
+
   private normalizeSections(sections?: any[]): any[] | undefined {
     if (!sections) return undefined;
 
     return sections.map((sec, index) => {
-      const base = this.getPreferredSlugSource(sec?.title, sec?.title_en);
+      const title = this.normalizeOptionalText(sec?.title);
+      const titleEn = this.normalizeOptionalText(sec?.title_en);
+      const base = this.getPreferredSlugSource(title, titleEn);
       return {
         ...sec,
+        title,
+        title_en: titleEn,
         slug: generateSlug(base || `section-${index + 1}`),
       };
     });
@@ -224,6 +240,7 @@ export class BlogService {
 
     // Sanitize empty strings to null for ObjectId fields
     if (data.image === '') data.image = undefined;
+    const normalizedAuthor = this.normalizeAuthor(data.author) ?? DEFAULTS.BLOG_AUTHOR;
 
     // Generate blog slug with EN-first strategy
     const baseSlug = generateSlug(this.getPreferredSlugSource(data.title, data.title_en));
@@ -240,6 +257,7 @@ export class BlogService {
         // Create blog
         const blogs = await Blog.create([{
           ...data,
+          author: normalizedAuthor,
           sections: processedSections,
           slug: uniqueSlug,
         }], { session });
@@ -276,6 +294,7 @@ export class BlogService {
 
     // Sanitize empty strings to null for ObjectId fields
     if (data.image === '') data.image = undefined;
+    const normalizedAuthor = this.normalizeAuthor(data.author);
 
     const session = await mongoose.startSession();
 
@@ -321,7 +340,9 @@ export class BlogService {
         // Update fields
         if (data.title !== undefined) blog.title = data.title;
         if (data.title_en !== undefined) blog.title_en = data.title_en;
-        if (data.author !== undefined) blog.author = data.author;
+        if (data.author !== undefined) {
+          blog.author = normalizedAuthor ?? DEFAULTS.BLOG_AUTHOR;
+        }
         if (data.image !== undefined) blog.image = data.image as any;
         if (data.excerpt !== undefined) blog.excerpt = data.excerpt;
         if (data.excerpt_en !== undefined) blog.excerpt_en = data.excerpt_en;

@@ -129,10 +129,10 @@ export class ContactService {
     const transporter = this.createTransporter();
 
     const mailResult = await transporter.sendMail({
-      from: `"${config.smtpFromName || 'Pharma Test Contact Form'}" <${config.smtpUser}>`,
+      from: `"${config.smtpFromName || 'VietAnh Instruments Contact Form'}" <${config.smtpUser}>`,
       to: this.receiverEmail,
       replyTo: payload.email,
-      subject: `[Pharma Website] ${payload.subject}`,
+      subject: `[VietAnh Instruments Website] ${payload.subject}`,
       text: this.buildText(payload, meta),
       html: this.buildHtml(payload, meta),
     });
